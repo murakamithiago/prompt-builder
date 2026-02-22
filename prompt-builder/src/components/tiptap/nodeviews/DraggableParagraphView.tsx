@@ -5,6 +5,8 @@ export function DraggableParagraphView({ node, getPos, editor }: NodeViewProps) 
   const [hovered, setHovered] = useState(false);
   const [dropPosition, setDropPosition] = useState<"above" | "below" | null>(null);
   const isEmpty = node.content.size === 0;
+  const isFirstNode = typeof getPos === "function" && getPos() === 0;
+  const editorIsEmpty = isEmpty && isFirstNode && editor.state.doc.childCount === 1;
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Store position in a ref so it's always current
@@ -214,11 +216,16 @@ export function DraggableParagraphView({ node, getPos, editor }: NodeViewProps) 
       </div>
 
       {/* Text content */}
-      <NodeViewContent
-        className={`flex-1 text-sm leading-relaxed text-foreground min-h-[1.625rem] ${
-          isEmpty ? "before:content-[''] before:text-muted-foreground" : ""
-        }`}
-      />
+      <div className="flex-1 relative min-h-[1.625rem]">
+        {editorIsEmpty && (
+          <span className="absolute top-0 left-0 text-sm leading-relaxed text-muted-foreground/50 pointer-events-none select-none">
+            Start writing your prompt
+          </span>
+        )}
+        <NodeViewContent
+          className="text-sm leading-relaxed text-foreground min-h-[1.625rem]"
+        />
+      </div>
 
       {/* Drop indicator line - below */}
       {dropPosition === "below" && (

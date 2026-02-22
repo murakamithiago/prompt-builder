@@ -37,6 +37,7 @@ interface TipTapEditorProps {
 export const TipTapEditor = forwardRef<EditorHandle, TipTapEditorProps>(
   function TipTapEditor({ onEditPrompt }, ref) {
     const [promptCount, setPromptCount] = useState(0);
+    const [isEmpty, setIsEmpty] = useState(true);
     const [externalDropPosition, setExternalDropPosition] = useState<number | null>(null);
     const editorContainerRef = useRef<HTMLDivElement>(null);
 
@@ -68,12 +69,18 @@ export const TipTapEditor = forwardRef<EditorHandle, TipTapEditorProps>(
       },
       onUpdate: ({ editor }) => {
         let count = 0;
+        let editorHasContent = false;
         editor.state.doc.descendants((node) => {
           if (node.type.name === "promptBlock") {
             count++;
+            editorHasContent = true;
+          }
+          if (node.isTextblock && node.textContent.trim().length > 0) {
+            editorHasContent = true;
           }
         });
         setPromptCount(count);
+        setIsEmpty(!editorHasContent);
       },
     });
 
@@ -375,8 +382,8 @@ export const TipTapEditor = forwardRef<EditorHandle, TipTapEditorProps>(
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <div className="max-w-3xl mx-auto py-8 px-6">
-            <EditorContent editor={editor} />
+          <div className="max-w-3xl mx-auto py-8 px-6 min-h-full">
+            <EditorContent editor={editor} className="min-h-[calc(100vh-10rem)]" />
           </div>
           {renderDropIndicator()}
         </div>
