@@ -1,0 +1,12 @@
+node_modules
+dist
+target
+src-tauri/target
+.env
+.env.local
+Fonts/Discord.dmg
+Fonts/Hoover_Complete.zip
+*.dmg
+*.zip
+.DS_Store
+.claude/
