@@ -15,12 +15,10 @@ export function IconSidebar({ activeView, onViewChange, onNewPrompt }: IconSideb
     <div className="w-12 bg-background border-r border-border flex flex-col items-center py-3 gap-2">
       {/* App logo */}
       <button
-        className="w-9 h-9 rounded-lg bg-foreground text-background flex items-center justify-center mb-2"
+        className="w-9 h-9 rounded-lg overflow-hidden flex items-center justify-center mb-2"
         title="Prompt Builder"
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3H6a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3h12a3 3 0 0 0 3-3 3 3 0 0 0-3-3z" />
-        </svg>
+        <img src="/logo.png" alt="Prompt Builder" className="w-9 h-9 object-cover" />
       </button>
 
       {/* New prompt button */}
