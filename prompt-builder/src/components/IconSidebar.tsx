@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 export type SidebarView = "prompts" | "drafts";
 
@@ -6,10 +7,24 @@ interface IconSidebarProps {
   activeView: SidebarView;
   onViewChange: (view: SidebarView) => void;
   onNewPrompt: () => void;
+  onLoginClick: () => void;
 }
 
-export function IconSidebar({ activeView, onViewChange, onNewPrompt }: IconSidebarProps) {
+export function IconSidebar({ activeView, onViewChange, onNewPrompt, onLoginClick }: IconSidebarProps) {
+  const { user, signOut } = useAuth();
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div className="w-12 bg-background border-r border-border flex flex-col items-center py-3 gap-2">
@@ -84,6 +99,68 @@ export function IconSidebar({ activeView, onViewChange, onNewPrompt }: IconSideb
         {hoveredButton === "drafts" && (
           <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-foreground text-background text-xs px-2 py-1 rounded whitespace-nowrap z-50">
             Drafts
+          </div>
+        )}
+      </div>
+
+      {/* Spacer to push settings to bottom */}
+      <div className="flex-1" />
+
+      {/* Settings / Account button */}
+      <div className="relative" ref={menuRef}>
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          onMouseEnter={() => setHoveredButton("settings")}
+          onMouseLeave={() => setHoveredButton(null)}
+          className="w-9 h-9 rounded-lg hover:bg-accent flex items-center justify-center transition-colors"
+          title="Settings"
+        >
+          {user ? (
+            <div className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
+              {user.email?.charAt(0).toUpperCase()}
+            </div>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          )}
+        </button>
+        {hoveredButton === "settings" && !menuOpen && (
+          <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 bg-foreground text-background text-xs px-2 py-1 rounded whitespace-nowrap z-50">
+            {user ? user.email : "Settings"}
+          </div>
+        )}
+
+        {/* Overflow menu */}
+        {menuOpen && (
+          <div className="absolute left-full ml-2 bottom-0 bg-popover border border-border rounded-lg shadow-lg z-50 py-1 min-w-[160px]">
+            {user ? (
+              <>
+                <div className="px-3 py-2 border-b border-border">
+                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setMenuOpen(false);
+                    signOut();
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
+                  onLoginClick();
+                }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
+              >
+                Login / Sign Up
+              </button>
+            )}
           </div>
         )}
       </div>

@@ -23,6 +23,8 @@ import {
   getChatHistory,
   saveChatToHistory,
   deleteChatFromHistory,
+  getSavedPrompts,
+  savePrompt,
   type SavedPrompt,
   type ChatHistoryItem,
 } from "@/lib/storage";
@@ -55,10 +57,10 @@ function App() {
   const [editTags, setEditTags] = useState<string[]>([]);
   const [editTagInput, setEditTagInput] = useState("");
 
-  // Fetch prompts from Supabase when user changes
+  // Fetch prompts from Supabase (logged in) or localStorage (logged out)
   const fetchPrompts = useCallback(async () => {
     if (!user) {
-      setPrompts([]);
+      setPrompts(getSavedPrompts());
       return;
     }
     const { data, error } = await supabase
@@ -163,6 +165,11 @@ function App() {
       await fetchPrompts();
     }
   }, [user, fetchPrompts]);
+
+  const handleSaveLocally = useCallback((prompt: SavedPrompt) => {
+    savePrompt(prompt);
+    setPrompts(getSavedPrompts());
+  }, []);
 
   const handleUpdatePrompt = useCallback(async (id: string, updates: Partial<SavedPrompt>) => {
     if (!user) return;
@@ -285,6 +292,7 @@ function App() {
           activeView={sidebarView}
           onViewChange={setSidebarView}
           onNewPrompt={handleNewPrompt}
+          onLoginClick={handleLoginClick}
         />
 
         {/* Content Sidebar (Prompts or History) */}
@@ -314,6 +322,7 @@ function App() {
             promptTitle={promptTitle}
             onTitleChange={setPromptTitle}
             onSave={handleSavePrompt}
+            onSaveLocally={handleSaveLocally}
             onCopy={handleCopy}
             getEditorContent={getEditorContent}
             sidebarCollapsed={sidebarCollapsed}

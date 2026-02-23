@@ -14,6 +14,7 @@ interface TopBarProps {
   promptTitle: string;
   onTitleChange: (title: string) => void;
   onSave: (prompt: SavedPrompt) => void;
+  onSaveLocally: (prompt: SavedPrompt) => void;
   onCopy: () => void;
   getEditorContent: () => string;
   sidebarCollapsed: boolean;
@@ -26,6 +27,7 @@ export function TopBar({
   promptTitle,
   onTitleChange,
   onSave,
+  onSaveLocally,
   onCopy,
   getEditorContent,
   sidebarCollapsed,
@@ -33,13 +35,14 @@ export function TopBar({
   allTags,
   onLoginClick,
 }: TopBarProps) {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [saveOpen, setSaveOpen] = useState(false);
   const [saveName, setSaveName] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [tagMenuOpen, setTagMenuOpen] = useState(false);
   const [loginPrompt, setLoginPrompt] = useState(false);
+  const [saveMode, setSaveMode] = useState<"cloud" | "local">("cloud");
   const tagInputRef = useRef<HTMLInputElement>(null);
   const tagMenuRef = useRef<HTMLDivElement>(null);
 
@@ -59,12 +62,13 @@ export function TopBar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  function handleOpenSave() {
-    // If not logged in, show login prompt instead
-    if (!user) {
+  function handleOpenSave(mode: "cloud" | "local" = "cloud") {
+    // If not logged in and trying to save to cloud, show choice modal
+    if (!user && mode === "cloud") {
       setLoginPrompt(true);
       return;
     }
+    setSaveMode(mode);
     setSaveName(promptTitle || "New prompt");
     setTags([]);
     setTagInput("");
@@ -112,21 +116,23 @@ export function TopBar({
     const content = getEditorContent();
     if (!saveName.trim() || !content.trim()) return;
 
-    onSave({
+    const prompt: SavedPrompt = {
       id: generateId(),
       title: saveName.trim(),
       content: content.trim(),
       tags,
       createdAt: Date.now(),
-    });
+    };
+
+    if (saveMode === "local") {
+      onSaveLocally(prompt);
+    } else {
+      onSave(prompt);
+    }
 
     setSaveOpen(false);
     setSaveName("");
     setTags([]);
-  }
-
-  async function handleLogout() {
-    await signOut();
   }
 
   return (
@@ -183,7 +189,7 @@ export function TopBar({
         {/* Save button */}
         <Popover open={saveOpen} onOpenChange={(open) => {
           if (open) {
-            handleOpenSave();
+            handleOpenSave("cloud");
             // Only open the popover if user is logged in
             if (user) setSaveOpen(true);
           } else {
@@ -327,42 +333,15 @@ export function TopBar({
           Copy Prompt
         </Button>
 
-        {/* Divider */}
-        <div className="w-px h-6 bg-border" />
-
-        {/* Auth section */}
-        {user ? (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground truncate max-w-[150px]">
-              {user.email}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="rounded-lg text-xs"
-              onClick={handleLogout}
-            >
-              Logout
-            </Button>
-          </div>
-        ) : (
-          <Button
-            variant="outline"
-            className="rounded-lg px-4 text-xs"
-            onClick={onLoginClick}
-          >
-            Login / Sign Up
-          </Button>
-        )}
       </div>
 
-      {/* Login prompt popover for unauthenticated save attempts */}
+      {/* Save choice modal for unauthenticated users */}
       {loginPrompt && !user && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-card border border-border rounded-xl p-6 w-full max-w-sm space-y-4 shadow-lg">
-            <h3 className="text-base font-semibold">Login required</h3>
+            <h3 className="text-base font-semibold">Where would you like to save?</h3>
             <p className="text-sm text-muted-foreground">
-              You need to be logged in to save prompts. Your prompts will be securely stored in the cloud.
+              Sign in to sync your prompts across devices, or save locally on this browser.
             </p>
             <div className="flex gap-2 justify-end">
               <Button
@@ -371,6 +350,17 @@ export function TopBar({
                 onClick={() => setLoginPrompt(false)}
               >
                 Cancel
+              </Button>
+              <Button
+                variant="outline"
+                className="rounded-lg"
+                onClick={() => {
+                  setLoginPrompt(false);
+                  handleOpenSave("local");
+                  setSaveOpen(true);
+                }}
+              >
+                Save Locally
               </Button>
               <Button
                 className="rounded-lg"
