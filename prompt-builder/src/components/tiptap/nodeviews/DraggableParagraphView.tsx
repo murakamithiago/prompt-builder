@@ -219,7 +219,7 @@ export function DraggableParagraphView({ node, getPos, editor }: NodeViewProps) 
       <div className="flex-1 relative min-h-[1.625rem]">
         {editorIsEmpty && (
           <span className="absolute top-0 left-0 text-sm leading-relaxed text-muted-foreground/50 pointer-events-none select-none">
-            Start writing your prompt
+            Write your prompt or drag a block from the library
           </span>
         )}
         <NodeViewContent

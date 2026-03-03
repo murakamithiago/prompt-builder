@@ -221,11 +221,8 @@ export function Sidebar({ prompts, onSave: _onSave, onUpdate, onDelete, onReorde
       </ScrollArea>
 
       {/* Footer */}
-      <Separator />
-      <div className="p-3">
-        <p className="text-[10px] text-muted-foreground text-center">
-          {prompts.length} prompt{prompts.length !== 1 ? "s" : ""} saved
-        </p>
+      <div className="flex items-center justify-center px-4 py-1.5 border-t border-border bg-card text-[11px] text-muted-foreground">
+        <span>{prompts.length} prompt{prompts.length !== 1 ? "s" : ""} saved</span>
       </div>
 
       {/* Edit Dialog */}

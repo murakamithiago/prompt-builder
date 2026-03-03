@@ -386,7 +386,7 @@ export const TipTapEditor = forwardRef<EditorHandle, TipTapEditorProps>(
           <span>
             {promptCount} prompt{promptCount !== 1 ? "s" : ""} inserted
           </span>
-          <span>Drag to reorder blocks</span>
+          <span>Created by <a href="https://thiagomurakami.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">Thiago Murakami</a></span>
         </div>
       </div>
     );
